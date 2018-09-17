@@ -1,7 +1,8 @@
 # RNN-Time-Series-tf
 
-Apply Vanilla RNN cell to learn time-series sequence
-![graph](graph.png)
+Apply Vanilla RNN cell to learn time-series sequence.
+Data source is Shanghai Shenzhen Index 300. (CSI 300)
+![Graph](graph.png)
 ![regression](Figure_1.png)
 
 ## Instruction
