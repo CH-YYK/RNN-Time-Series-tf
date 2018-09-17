@@ -10,7 +10,7 @@ class train(data_tool, RNNModel):
     def __init__(self):
         data_tool.__init__(self, data_path=data_path, split_ratio=0.8)
         self.batch_size = 64
-        self.epoch_size = 10
+        self.epoch_size = 20
 
         with tf.Graph().as_default():
             RNNModel.__init__(self, sequence_length=20, RNN_size=100)
@@ -30,14 +30,14 @@ class train(data_tool, RNNModel):
                 loss_summary = tf.summary.scalar("loss", self.loss)
 
                 # Train Summaries
-                train_summary_op = tf.summary.merge([loss_summary])
+                train_summary_op = loss_summary
                 train_summary_dir = os.path.join("runs", summary_dir, "summaries", "train")
-                train_summary_writer = tf.summary.FileWriter(train_summary_dir)
+                train_summary_writer = tf.summary.FileWriter(train_summary_dir, sess.graph)
 
                 # Test Summaries
-                test_summary_op = tf.summary.merge([loss_summary])
+                test_summary_op = loss_summary
                 test_summary_dir = os.path.join("runs", summary_dir, 'summaries', 'test')
-                test_summary_writer = tf.summary.FileWriter(test_summary_dir)
+                test_summary_writer = tf.summary.FileWriter(test_summary_dir, sess.graph)
 
                 # define operations
                 def train_(batch_x, batch_y):
@@ -53,6 +53,7 @@ class train(data_tool, RNNModel):
                     time_str = datetime.datetime.now().isoformat()
                     print("{}: step {}, MAE {:g}".format(time_str, step, loss))
                     train_summary_writer.add_summary(summary, step)
+
 
                 def test_(return_output=False):
                     feed_dict = {self.input_x: self.test_x,
