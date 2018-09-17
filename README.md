@@ -2,7 +2,7 @@
 
 Apply Vanilla RNN cell to learn time-series sequence.
 Data source is Shanghai Shenzhen Index 300. (CSI 300)
-![Graph](graph.png)
+![Graph](Graph.png)
 ![regression](Figure_1.png)
 
 ## Instruction
