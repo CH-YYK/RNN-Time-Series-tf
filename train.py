@@ -3,6 +3,7 @@ from RNNModel import RNNModel
 import tensorflow as tf
 import datetime, os
 import matplotlib.pyplot as plt
+import pandas as pd
 
 data_path = 'Shanghai Shenzhen CSI 300 Historical Data.csv'
 class train(data_tool, RNNModel):
@@ -93,17 +94,20 @@ class train(data_tool, RNNModel):
 
                 self.test_output = test_(True)
 
-    def Evaluation(self):
+    def Evaluation(self, plot=False):
         # get predicted data
         print(self.test_output.shape)
         predicted_value = [(self.test_output[i] + 1) * self.test_raw_x[i][0] for i in range(len(self.test_raw_x))]
 
+        tmp = pd.DataFrame(list(zip(self.test_raw_y, predicted_value)), columns=['Real', 'Predicted'])
+        tmp.to_csv('result.csv', index=False)
         # plot
-        plt.subplot(111)
-        plt.plot(predicted_value, label="Predicted")
-        plt.plot(self.test_raw_y.tolist(), label='Actual')
-        plt.legend()
-        plt.show()
+        if plot:
+        	plt.subplot(111)
+        	plt.plot(predicted_value, label="Predicted")
+        	plt.plot(self.test_raw_y.tolist(), label='Actual')
+        	plt.legend()
+        	plt.show()
 
 
 
