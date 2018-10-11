@@ -103,14 +103,14 @@ class train(data_tool, RNNModel):
         tmp.to_csv('result.csv', index=False)
         # plot
         if plot:
-        	plt.subplot(111)
-        	plt.plot(predicted_value, label="Predicted")
-        	plt.plot(self.test_raw_y.tolist(), label='Actual')
-        	plt.legend()
-        	plt.show()
+            plt.subplot(111)
+            plt.plot(predicted_value, label="Predicted")
+            plt.plot(self.test_raw_y.tolist(), label='Actual')
+            plt.legend()
+            plt.show()
 
 
 
 if __name__ == '__main__':
-    test = train()
+    test = train(binary=True)
     # test.Evaluation()
