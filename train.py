@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 data_path = 'Shanghai Shenzhen CSI 300 Historical Data.csv'
 class train(data_tool, RNNModel):
 
-    def __init__(self):
-        data_tool.__init__(self, data_path=data_path, split_ratio=0.8)
+    def __init__(self, binary=False):
+        data_tool.__init__(self, data_path=data_path, split_ratio=0.8, binary=binary)
         self.batch_size = 64
         self.epoch_size = 20
 
         with tf.Graph().as_default():
-            RNNModel.__init__(self, sequence_length=20, RNN_size=100)
+            RNNModel.__init__(self, sequence_length=20, RNN_size=100, binary=binary)
             sess = tf.Session()
             with sess.as_default():
 
@@ -65,7 +65,7 @@ class train(data_tool, RNNModel):
                         feed_dict=feed_dict)
 
                     time_str = datetime.datetime.now().isoformat()
-                    print("Test: {}: step {}, MAE {:g}".format(time_str, step, loss))
+                    print("Test: {}: step {}, Loss {:g}".format(time_str, step, loss))
                     test_summary_writer.add_summary(summary, step)
 
                     if return_output:
@@ -109,4 +109,4 @@ class train(data_tool, RNNModel):
 
 if __name__ == '__main__':
     test = train()
-    test.Evaluation()
+    # test.Evaluation()

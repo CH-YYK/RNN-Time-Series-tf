@@ -4,7 +4,7 @@ import pandas as pd
 data_path = 'Shanghai Shenzhen CSI 300 Historical Data.csv'
 class data_tool(object):
 
-    def __init__(self, data_path, split_ratio):
+    def __init__(self, data_path, split_ratio, binary=False):
         # load time series
         self.data = np.array([float(i.replace(',', '')) for i in pd.read_csv(data_path)['Price'][::-1]])
 
@@ -28,10 +28,19 @@ class data_tool(object):
 
         # separate x and y
         self.train_x = self.train[:, :-1]
-        self.train_y = self.train[:, -1].reshape([-1, 1])
-
         self.test_x = self.test[:, :-1]
-        self.test_y = self.test[:, -1].reshape([-1, 1])
+
+        if not binary:
+            self.train_y = self.train[:, -1].reshape([-1, 1])
+            self.test_y = self.test[:, -1].reshape([-1, 1])
+        else:
+            tmp = (self.train[:, -1] > self.train[:, -2]).astype('int').tolist()
+            self.train_y = [[0] * len(tmp)]
+            _ = [self.train_y[i].insert(j, 1) for i, j in enumerate(tmp)]
+
+            tmp1 = (self.test[:, -1] > self.test[:, -2]).astype('int').tolist()
+            self.test_y = [[0] * len(tmp1)]
+            _ = [self.test_y[i].insert(j, 1) for i, j in enumerate(tmp1)]
 
         # raw data
         self.test_raw_x = self.data_raw[self.split_point:, :-1]
