@@ -3,18 +3,16 @@ from RNNModel import RNNModel
 import tensorflow as tf
 import datetime, os
 import matplotlib.pyplot as plt
-import pandas as pd
 
-data_path = 'Shanghai Shenzhen CSI 300 Historical Data.csv'
+
 class train(data_tool, RNNModel):
-
-    def __init__(self, binary=False):
-        data_tool.__init__(self, data_path=data_path, split_ratio=0.8, binary=binary)
-        self.batch_size = 64
-        self.epoch_size = 20
+    def __init__(self, data_path, seq_length, RNN_size, batch_size=64, epoch_size=15, split_ratio=0.8):
+        data_tool.__init__(self, data_path=data_path, split_ratio=split_ratio, window_size=seq_length + 1)
+        self.batch_size = batch_size
+        self.epoch_size = epoch_size
 
         with tf.Graph().as_default():
-            RNNModel.__init__(self, sequence_length=20, RNN_size=100, binary=binary)
+            RNNModel.__init__(self, sequence_length=seq_length, RNN_size=RNN_size)
             sess = tf.Session()
             with sess.as_default():
 
@@ -44,17 +42,15 @@ class train(data_tool, RNNModel):
                 def train_(batch_x, batch_y):
                     feed_dict = {self.input_x: batch_x,
                                  self.output_y: batch_y,
-                                 self.keep_prob: 0.5,
-                                 }
+                                 self.keep_prob: 0.5}
 
-                    loss, _, step, summary = sess.run(
-                        [self.loss, train_op, global_step, train_summary_op],
-                        feed_dict=feed_dict)
+                    loss, _, step, summary = sess.run([self.loss, train_op, global_step, train_summary_op],
+                            feed_dict=feed_dict)
 
                     time_str = datetime.datetime.now().isoformat()
-                    print("{}: step {}, MAE {:g}".format(time_str, step, loss))
-                    train_summary_writer.add_summary(summary, step)
+                    print("{}: step {}, Loss {:g}".format(time_str, step, loss))
 
+                    train_summary_writer.add_summary(summary, step)
 
                 def test_(return_output=False):
                     feed_dict = {self.input_x: self.test_x,
@@ -73,7 +69,6 @@ class train(data_tool, RNNModel):
                         return test_output
                     else:
                         pass
-
 
                 # initialize variable
                 sess.run(tf.global_variables_initializer())
@@ -94,15 +89,15 @@ class train(data_tool, RNNModel):
 
                 self.test_output = test_(True)
 
-    def Evaluation(self, plot=False):
+    def Evaluation(self, verbose=False):
         # get predicted data
         print(self.test_output.shape)
-        predicted_value = [(self.test_output[i] + 1) * self.test_raw_x[i][0] for i in range(len(self.test_raw_x))]
 
-        tmp = pd.DataFrame(list(zip(self.test_raw_y, predicted_value)), columns=['Real', 'Predicted'])
-        tmp.to_csv('result.csv', index=False)
-        # plot
-        if plot:
+        # denormalized back
+        predicted_value = (self.test_output + 1) * self.test_raw_x[:, 0].reshape((-1, 1))
+        # predicted_value = [(self.test_output[i] + 1) * self.test_raw_x[i][0] for i in range(len(self.test_raw_x))]
+
+        if verbose:
             plt.subplot(111)
             plt.plot(predicted_value, label="Predicted")
             plt.plot(self.test_raw_y.tolist(), label='Actual')
@@ -112,5 +107,6 @@ class train(data_tool, RNNModel):
 
 
 if __name__ == '__main__':
-    test = train(binary=True)
-    # test.Evaluation()
+    data_path = 'Shanghai Shenzhen CSI 300 Historical Data.csv'
+    test = train(data_path=data_path, seq_length=4, RNN_size=100, batch_size=64, epoch_size=15, split_ratio=0.8)
+    test.Evaluation(True)

@@ -4,21 +4,18 @@ import pandas as pd
 data_path = 'Shanghai Shenzhen CSI 300 Historical Data.csv'
 class data_tool(object):
 
-    def __init__(self, data_path, split_ratio, binary=False):
+    def __init__(self, data_path, split_ratio, window_size=5):
         # load time series
         self.data = np.array([float(i.replace(',', '')) for i in pd.read_csv(data_path)['Price'][::-1]])
 
-        #
-        window_size = 21
-
-        #
+        # construct sequencies
         raw = []
         for i in range(self.data.shape[0] - window_size):
             raw.append(self.data[i: i + window_size])
+        self.data_raw = np.array(raw)
 
         # normalized data by dividing first element
-        self.norm_raw = self.normalize(raw)
-        self.data_raw = np.array(raw)
+        self.norm_raw = self.normalize(self.data_raw)
         self.data = np.array(self.norm_raw)
 
         # split train/test
@@ -30,17 +27,8 @@ class data_tool(object):
         self.train_x = self.train[:, :-1]
         self.test_x = self.test[:, :-1]
 
-        if not binary:
-            self.train_y = self.train[:, -1].reshape([-1, 1])
-            self.test_y = self.test[:, -1].reshape([-1, 1])
-        else:
-            tmp = (self.train[:, -1] > self.train[:, -2]).astype('int').tolist()
-            self.train_y = [[0] * len(tmp)]
-            _ = [self.train_y[i].insert(j, 1) for i, j in enumerate(tmp)]
-
-            tmp1 = (self.test[:, -1] > self.test[:, -2]).astype('int').tolist()
-            self.test_y = [[0] * len(tmp1)]
-            _ = [self.test_y[i].insert(j, 1) for i, j in enumerate(tmp1)]
+        self.train_y = self.train[:, -1].reshape([-1, 1])
+        self.test_y = self.test[:, -1].reshape([-1, 1])
 
         # raw data
         self.test_raw_x = self.data_raw[self.split_point:, :-1]
@@ -65,9 +53,8 @@ class data_tool(object):
                 yield shuffled_data[start_index:end_index]
 
     def normalize(self, data):
-        normalized_data = []
-        for window in data:
-            normalized_window = [((float(p) / float(window[0])) - 1) for p in window]
-            normalized_data.append(normalized_window)
-        return normalized_data
+        return (data / data[:, 0].reshape((-1, 1))) - 1
 
+
+if __name__ == '__main__':
+    test = data_tool(data_path, split_ratio=0.7)
